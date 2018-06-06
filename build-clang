@@ -30,6 +30,9 @@ LLVM_FOLDER=${MAIN_FOLDER}/llvm
 # Folder that will hold all of the build files and compiled code
 BUILD_FOLDER=${MAIN_FOLDER}/build
 
+# Folder that will hold compiled toolchains
+TC_FOLDER=${HOME}/toolchains
+
 # Start tracking time
 START=$(date +"%s")
 
