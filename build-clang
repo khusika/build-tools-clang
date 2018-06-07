@@ -121,9 +121,12 @@ function enforce_value() {
 function parse_parameters() {
     while [[ ${#} -ge 1 ]]; do
         case ${1} in
+            # REQUIRED FLAGS
+            "-a"|"--arch") shift && TARGET=${1} ;;
+
+            # OPTIONAL FLAGS
             "-b"|"--build-only")
                 BUILD_ONLY=true ;;
-
             "-v"|"--version")
                 shift && enforce_value "${@}"
                 VERSION=${1} ;;
@@ -133,6 +136,15 @@ function parse_parameters() {
 
         shift
     done
+
+    # Default values
+    case "${TARGET}" in
+        "arm") ARCH="ARM" ;;
+        "arm64") ARCH="AArch64" ;;
+        "i686") ARCH="X86" ;;
+        "all") ARCH="X86;ARM;AArch64" ;;
+        *) die "Absent or invalid arch specified!" ;;
+    esac
 
     # Clang 7.x is compiled by default
     if [[ -z ${VERSION} ]]; then
@@ -245,7 +257,7 @@ function build() {
           -DLLVM_INCLUDE_EXAMPLES=OFF \
           -DLLVM_INCLUDE_TESTS=OFF \
           -DLLVM_BINUTILS_INCDIR="${LLVM_FOLDER}/tools/binutils/include" \
-          -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
+          -DLLVM_TARGETS_TO_BUILD="${ARCH}" \
           -DLLVM_OPTIMIZED_TABLEGEN=ON \
           -DLLVM_USE_LINKER=gold \
           -DCLANG_VENDOR="Android " \
