@@ -17,6 +17,7 @@
 ###############
 
 # Colors
+BOLD="\033[1m"
 GRN="\033[01;32m"
 RED="\033[01;31m"
 RST="\033[0m"
@@ -48,6 +49,19 @@ THREADS=$(nproc --all)
 # Alias for echo to print escape codes
 function echo() {
     command echo -e "${@}"
+}
+
+# Help menu function
+function help_menu() {
+    echo
+    echo "${BOLD}OVERVIEW:${RST} Build a Clang toolchain\n"
+    echo "${BOLD}USAGE:${RST} ./$(basename ${0}) <options>\n"
+    echo "${BOLD}EXAMPLE:${RST} ./$(basename ${0}) -a arm64\n"
+    echo "${BOLD}REQUIRED PARAMETERS:${RST}"
+    echo "  -a  | --arch:        Possible values: arm, arm64, x86, or all. This is the toolchain's target architecture."
+    echo "${BOLD}OPTIONAL PARAMETERS:${RST}"
+    echo "  -b  | --build-only:  Build only."
+    echo "  -v  | --version:     Clang 7.x is compiled by default.\n"
 }
 
 # Prints a formatted header to point out what is being done to the user
@@ -131,7 +145,10 @@ function parse_parameters() {
                 shift && enforce_value "${@}"
                 VERSION=${1} ;;
 
-            *) die "Invalid parameter specified!" ;;
+            # HELP!
+            "-h"|"--help") help_menu; exit ;;
+
+            *) die "Invalid parameter specified!" -h ;;
         esac
 
         shift
@@ -143,7 +160,7 @@ function parse_parameters() {
         "arm64") ARCH="AArch64" ;;
         "i686") ARCH="X86" ;;
         "all") ARCH="X86;ARM;AArch64" ;;
-        *) die "Absent or invalid arch specified!" ;;
+        *) die "Absent or invalid arch specified!" -h ;;
     esac
 
     # Clang 7.x is compiled by default
