@@ -1,7 +1,7 @@
 # CLANG toolchain build script
 
 This is a script to build CLANG toolchains targeting arm, arm64, and x86 devices
-(primarily Android devices).
+based on [nathanchance's scripts](https://github.com/nathanchance/scripts/blob/master/build-clang).
 
 
 ## Using the script
@@ -58,4 +58,4 @@ $ ./build-clang
 ## Credits/thanks
 
 + [nathanchance](https://github.com/nathanchance): For great script!
-+ [krashCGQ](https://github.com/krasCGQ): For some modifications to update the script/components
++ [krasCGQ](https://github.com/krasCGQ): For some modifications to update the script/components
