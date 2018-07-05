@@ -143,6 +143,8 @@ function parse_parameters() {
             # OPTIONAL FLAGS
             "-b"|"--build-only")
                 BUILD_ONLY=true ;;
+            "-T"|"--test")
+                TEST=true ;;
             "-v"|"--version")
                 shift && enforce_value "${@}"
                 VERSION=${1} ;;
@@ -171,7 +173,7 @@ function parse_parameters() {
     fi
 
     # Folder that will hold the final compiled toolchain
-    INSTALL_FOLDER=${TC_FOLDER}/${VENDOR}-clang-${VERSION}.x
+    INSTALL_FOLDER=${TC_FOLDER}/${VENDOR}-clang-${VERSION}.x${TEST:+"-test"}
 
     # SVN copy of the LLVM folder for revisioning
     SVN_FOLDER=${MAIN_FOLDER}/svn-${VERSION}.x
@@ -300,8 +302,10 @@ function build() {
 function install() {
     header "Installing Clang"
 
-    rm -rf "${INSTALL_FOLDER}-old"
-    mv "${INSTALL_FOLDER}" "${INSTALL_FOLDER}-old"
+    if [[ -z ${TEST} ]]; then
+        rm -rf "${INSTALL_FOLDER}-old"
+        mv "${INSTALL_FOLDER}" "${INSTALL_FOLDER}-old"
+    fi
     TIME_STRING="$(format_time "${START}" "$(date +"%s")")"
     if ! ninja install; then
         header "ERROR INSTALLING!"
