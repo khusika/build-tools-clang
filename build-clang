@@ -149,11 +149,10 @@ function parse_parameters() {
             "-i"|"--install-folder")
                 shift && enforce_value "${@}"
                 INSTALL_FOLDER=${1} ;;
+            "-s"|"--stable")
+                VERSION=6 ;;
             "-T"|"--test")
                 TEST=true ;;
-            "-v"|"--version")
-                shift && enforce_value "${@}"
-                VERSION=${1} ;;
 
             # HELP!
             "-h"|"--help") help_menu; exit ;;
