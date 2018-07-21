@@ -153,6 +153,8 @@ function parse_parameters() {
                 VERSION=6 ;;
             "-T"|"--test")
                 TEST=true ;;
+            "-u"|"--update-only")
+                UPDATE_ONLY=true ;;
 
             # HELP!
             "-h"|"--help") help_menu; exit ;;
@@ -297,6 +299,8 @@ function sync_all() {
     sync libcxxabi
     sync libunwind
     sync openmp
+
+    [[ -n ${UPDATE_ONLY} ]] && exit
 }
 
 # Removes any previous build files
