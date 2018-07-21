@@ -207,7 +207,7 @@ function sync() {
         LLVM_ORG=https://git.llvm.org/git/
         case ${FOLDER} in
             "clang"|"llvm")
-                [[ $(uname -n) = "flashbox" ]] && URL_PREFIX=git@github.com: || URL_PREFIX=https://github.com/
+                URL_PREFIX=https://github.com/
                 URL=${URL_PREFIX}nathanchance/$(basename "${FOLDER}").git ;;
             *)
                 URL=${LLVM_ORG}$(basename "${FOLDER}") ;;
@@ -227,8 +227,7 @@ function sync() {
                 git clone "${URL}" -b "${BRANCH}" "${FOLDER}"
                 git -C "${FOLDER}" remote add upstream "${LLVM_ORG}$(basename "${FOLDER}")"
                 git -C "${FOLDER}" fetch upstream
-                git -C "${FOLDER}" rebase upstream/"${BRANCH}"
-                [[ $(uname -n) = "flashbox" ]] && git -C "${FOLDER}" push -f ;;
+                git -C "${FOLDER}" rebase upstream/"${BRANCH}" ;;
             *)
                 git clone "${URL}" -b "${BRANCH}" "${FOLDER}" ;;
         esac
@@ -255,7 +254,6 @@ function sync() {
                         add_remote upstream "${LLVM_ORG}$(basename "${FOLDER}")"
                         git fetch upstream
                         git rebase upstream/"${BRANCH}"
-                        [[ $(uname -n) = "flashbox" ]] && git push -f
                     fi ;;
                 *)
                     git clean -fxdq
