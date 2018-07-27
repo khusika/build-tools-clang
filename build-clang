@@ -63,7 +63,10 @@ function help_menu() {
     echo "  -a  | --arch:        Possible values: arm, arm64, x86, or all. This is the toolchain's target architecture."
     echo "${BOLD}OPTIONAL PARAMETERS:${RST}"
     echo "  -b  | --build-only:  Build only."
-    echo "  -v  | --version:     Clang 7.x is compiled by default.\n"
+    echo "  -S  | --stock:       Compile stock Clang."
+    echo "  -s  | --stable:      Compile Clang 6."
+    echo "  -u  | --update-only: Ability to only update repos."
+    echo "  -T  | --test:        Build a test toolchain.\n"
 }
 
 # Prints a formatted header to point out what is being done to the user
