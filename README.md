@@ -15,7 +15,7 @@ following:
 
 For Debian and Ubuntu:
 ```
-$ sudo apt-get install build-essential git git-svn bc binfmt-support libllvm-3.6-ocaml-dev llvm-3.6 llvm-3.6-dev llvm-3.6-runtime automake autogen autoconf autotools-dev libtool shtool python m4 gcc libtool zlib1g-dev
+$ sudo apt-get install git git-svn bc binfmt-support automake autogen autoconf autotools-dev libtool shtool python m4 gcc libtool zlib1g-dev
 ```
 
 Install CMake 3.4.3:
@@ -35,17 +35,25 @@ $ sudo wget -q http://opensource.wandisco.com/wandisco-debian.gpg -O- | sudo apt
 $ sudo apt-get update && sudo apt-get install subversion
 ```
 
-Install prebuilt clang 3.8.0:
+Install Prebuilt GCC 4.9
 
 ```bash
-$ wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
-$ echo 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.8 main' | sudo tee -a /etc/apt/sources.list
-$ sudo apt-get update
-$ sudo apt-get install clang-3.8 lldb-3.8
-$ sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-3.8 100
-$ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-3.8 100
+$ sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+$ sudo apt-get install gcc-4.9 g++-4.9
+$ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 100
+$ sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 100
 ```
 
+Install prebuilt clang 6.0:
+
+```bash
+$ wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+$ echo 'deb http://llvm.org/apt/[trusty/xenial/artful/bionic]/ llvm-toolchain-[trusty/xenial/artful/bionic]-6.0 main' | sudo tee -a /etc/apt/sources.list
+$ sudo apt-get update
+$ sudo apt-get install clang-6.0 lldb-6.0 lld-6.0
+$ sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-6.0 100
+$ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-6.0 100
+```
 
 Once you have set up your environment, run the following to build clang:
 
