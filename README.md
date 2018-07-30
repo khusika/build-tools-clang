@@ -15,7 +15,7 @@ following:
 
 For Debian and Ubuntu:
 ```
-$ sudo apt-get install git git-svn bc binfmt-support automake autogen autoconf autotools-dev libtool shtool python m4 gcc libtool zlib1g-dev
+$ sudo apt-get install git git-svn bc binfmt-support automake autogen autoconf autotools-dev libtool shtool python m4 gcc libtool zlib1g-dev libelf-dev libxml2-dev python-yaml python-pygments
 ```
 
 Install CMake 3.4.3:
