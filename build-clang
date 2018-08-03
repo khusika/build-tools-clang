@@ -70,6 +70,7 @@ function help_menu() {
     echo "  -S  | --stock:       Compile official Clang (Without Nathan's patch)."
     echo "  -s  | --stable:      Compile Clang 7."
     echo "  -u  | --update-only: Ability to only update repos."
+    echo "  -p  | --package:     Possible values: gz or xz. Compresses toolchain after build."
     echo "  -T  | --test:        Build a test toolchain.\n"
 }
 
@@ -179,6 +180,7 @@ function parse_parameters() {
                 TEST=true ;;
             "-u"|"--update-only")
                 UPDATE_ONLY=true ;;
+            "-p"|"--package") shift && COMPRESSION=${1} ;;
 
             # HELP!
             "-h"|"--help") help_menu; exit ;;
@@ -427,6 +429,30 @@ function install() {
     echo
 }
 
+# Package toolchain
+function package_tc() {
+    if [[ -n ${COMPRESSION} ]]; then
+        SVNVERSION=$(cd "${SVN_FOLDER}" && svn info --show-item last-changed-revision)
+        PACKAGE=${VENDOR}-clang-${VERSION}.0.${SVNVERSION}.tar.${COMPRESSION}
+
+        header "PACKAGING TOOLCHAIN"
+
+        echo "Target file: ${PACKAGE}"
+
+        case "${COMPRESSION}" in
+            "gz")
+                echo "Packaging with GZIP..."
+                GZ_OPT=-9 tar -c --use-compress-program=pigz --absolute-names -f "${PACKAGE}" ${INSTALL_FOLDER} ;;
+            "xz")
+                echo "Packaging with XZ..."
+                XZ_OPT=-9 tar -c --use-compress-program=pxz --absolute-names -f "${PACKAGE}" ${INSTALL_FOLDER} ;;
+            *)
+                die "Invalid compression specified... skipping" ;;
+        esac
+        mv "${PACKAGE}" "${TC_FOLDER}"
+        echo "${BOLD}Packaging location:${RST} ${INSTALL_FOLDER}/${PACKAGE}"
+    fi
+}
 
 trap 'echo; die "Manually aborted!"' SIGINT SIGTERM
 parse_parameters "${@}"
@@ -434,3 +460,4 @@ sync_all
 cleanup
 build
 install
+package_tc
