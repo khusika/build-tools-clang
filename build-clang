@@ -61,17 +61,18 @@ function echo() {
 function help_menu() {
     echo
     echo "${BOLD}OVERVIEW:${RST} Build a Clang toolchain\n"
-    echo "${BOLD}USAGE:${RST} ./$(basename ${0}) <options>\n"
-    echo "${BOLD}EXAMPLE:${RST} ./$(basename ${0}) -a arm64\n"
+    echo "${BOLD}USAGE:${RST}    ./$(basename ${0}) <options>\n"
+    echo "${BOLD}EXAMPLE:${RST}  ./$(basename ${0}) -a arm64\n"
     echo "${BOLD}REQUIRED PARAMETERS:${RST}"
-    echo "  -a  | --arch:        Possible values: arm, arm64, x86, or all. This is the toolchain's target architecture."
+    echo "  -a  | --arch:          Possible values: arm, arm64, x86, or all. This is the toolchain's target architecture."
     echo "${BOLD}OPTIONAL PARAMETERS:${RST}"
-    echo "  -b  | --build-only:  Build only."
-    echo "  -S  | --stock:       Compile official Clang (Without Nathan's patch)."
-    echo "  -s  | --stable:      Compile Clang 7."
-    echo "  -u  | --update-only: Ability to only update repos."
-    echo "  -p  | --package:     Possible values: gz or xz. Compresses toolchain after build."
-    echo "  -T  | --test:        Build a test toolchain.\n"
+    echo "  -I  | --install-only:  Build only."
+    echo "  -b  | --build-only:    Build only."
+    echo "  -S  | --stock:         Compile official Clang (Without Nathan's patch)."
+    echo "  -s  | --stable:        Compile Clang 7."
+    echo "  -u  | --update-only:   Ability to only update repos."
+    echo "  -p  | --package:       Possible values: gz or xz. Compresses toolchain after build."
+    echo "  -T  | --test:          Build a test toolchain.\n"
 }
 
 # Prints a formatted header to point out what is being done to the user
