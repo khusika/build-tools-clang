@@ -386,7 +386,7 @@ function build() {
           -DLLVM_OPTIMIZED_TABLEGEN=ON \
           -DLLVM_USE_LINKER=gold \
           -DCLANG_VENDOR="${VENDOR} " \
-          -DLLVM_VERSION_PATCH="$(cd "${SVN_FOLDER}" || die "SVN folder doesn't exist";
+          -DLLVM_VERSION_PATCH="$(cd "${SVN_FOLDER}" || die "SVN folder does not exist";
                                   svn info -r HEAD --show-item revision)" \
           -DLLVM_VERSION_SUFFIX="" \
           -DCLANG_REPOSITORY_STRING="${URL_PREFIX}clang" \
