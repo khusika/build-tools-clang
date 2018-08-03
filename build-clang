@@ -25,7 +25,7 @@ RST="\033[0m"
 VENDOR=$(echo $USER)
 
 # Folder that will house the source and build files
-MAIN_FOLDER=${HOME}/clang-build
+MAIN_FOLDER=./clang-build
 
 # Folder that will hold the main LLVM source
 LLVM_FOLDER=${MAIN_FOLDER}/llvm
@@ -34,7 +34,7 @@ LLVM_FOLDER=${MAIN_FOLDER}/llvm
 BUILD_FOLDER=${MAIN_FOLDER}/build
 
 # Folder that will hold compiled toolchains
-TC_FOLDER=${HOME}/toolchains
+TC_FOLDER=./toolchains
 
 # Start tracking time
 START=$(date +"%s")
