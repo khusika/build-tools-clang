@@ -257,7 +257,7 @@ function git_sync() {(
     fi
 
     # If folder doesn't exist, we need to clone it
-    [[ ! -d ${FOLDER} ]] && git clone "${URL}" -b "${BRANCH}" "${FOLDER}"
+    [[ ! -d ${FOLDER} ]] && git clone "${URL}" -b "${BRANCH}" "${FOLDER}" || die "Error cloning ${FOLDER}!"
 
     cd "${FOLDER}" || die "Error moving into ${FOLDER}"
 
