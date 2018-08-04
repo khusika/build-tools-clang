@@ -288,7 +288,7 @@ function git_sync() {(
 
     # Roll back if necessary
     rollback
-)}
+) || exit 1; }
 
 
 # Syncs a svn project
