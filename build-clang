@@ -69,7 +69,7 @@ function help_menu() {
     echo "${BOLD}REQUIRED PARAMETERS:${RST}"
     echo "  -a  | --arch:          Possible values: arm, arm64, x86, or all. This is the toolchain's target architecture."
     echo "${BOLD}OPTIONAL PARAMETERS:${RST}"
-    echo "  -I  | --install-only:  Build only."
+    echo "  -I  | --install-only:  Install only."
     echo "  -b  | --build-only:    Build only."
     echo "  -S  | --stock:         Compile official Clang (Without Nathan's patch)."
     echo "  -s  | --stable:        Compile Clang 7."
