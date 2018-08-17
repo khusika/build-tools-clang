@@ -482,3 +482,4 @@ parse_parameters "${@}"
 sync_build
 install
 package_tc
+exit 0
