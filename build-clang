@@ -366,6 +366,7 @@ function sync_all() {
 
 # Removes any previous build files
 function cleanup() {
+    find ${DIR} -type f -name "*.tar.*" -exec rm -f {} \;
     rm -rf "${BUILD_FOLDER}"
     mkdir -p "${BUILD_FOLDER}"
     cd "${BUILD_FOLDER}" || die "Error creating build folder!"
