@@ -256,8 +256,7 @@ function git_sync() {(
         # Set URL based on folder
         case ${FOLDER} in
             "clang")
-                URL_PREFIX=https://github.com/
-                URL=${URL_PREFIX}nathanchance/$(basename "${FOLDER}").git ;;
+                URL=https://github.com/nathanchance/$(basename "${FOLDER}").git ;;
             "extra")
                 URL=${LLVM_ORG}clang-tools-extra ;;
             *)
