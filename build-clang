@@ -67,7 +67,7 @@ function help_menu() {
     echo "${BOLD}USAGE:${RST}    ./$(basename ${0}) <options>\n"
     echo "${BOLD}EXAMPLE:${RST}  ./$(basename ${0}) -a arm64\n"
     echo "${BOLD}REQUIRED PARAMETERS:${RST}"
-    echo "  -a  | --arch:          Possible values: arm, arm64, x86, or all. This is the toolchain's target architecture."
+    echo "  -a  | --arch:          Possible values: arm, arm64, x86, ARM, and all. This is the toolchain's target architecture."
     echo "${BOLD}OPTIONAL PARAMETERS:${RST}"
     echo "  -I  | --install-only:  Install only."
     echo "  -b  | --build-only:    Build only."
@@ -203,6 +203,7 @@ function parse_parameters() {
         "arm") ARCH="ARM" ;;
         "arm64") ARCH="AArch64" ;;
         "i686") ARCH="X86" ;;
+        "ARM") ARCH="ARM;AArch64" ;;
         "all") ARCH="X86;ARM;AArch64" ;;
         *) die "Absent or invalid arch specified!" -h ;;
     esac
