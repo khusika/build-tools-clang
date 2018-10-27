@@ -205,8 +205,9 @@ function parse_parameters() {
         "arm") ARCH="ARM" ;;
         "arm64") ARCH="AArch64" ;;
         "i686") ARCH="X86" ;;
+        "powerpc") ARCH="PowerPC" ;;
         "ARM") ARCH="ARM;AArch64" ;;
-        "all") ARCH="X86;ARM;AArch64" ;;
+        "all") ARCH="PowerPC;X86;ARM;AArch64" ;;
         *) die "Absent or invalid arch specified!" -h ;;
     esac
 
