@@ -179,6 +179,8 @@ function parse_parameters() {
             "-i"|"--install-folder")
                 shift && enforce_value "${@}"
                 INSTALL_FOLDER=${1} ;;
+            "-l"|"--local-changes")
+                LOCAL_CHANGES=true ;;
             "-S"|"--stock")
                 STOCK=true ;;
             "-s"|"--stable")
@@ -283,7 +285,7 @@ function git_sync() {(
         if [[ -n ${STOCK} ]]; then
             git reset --hard upstream/"${BRANCH}"
         else
-            git reset --hard origin/"${BRANCH}"
+            [[ -z ${LOCAL_CHANGES} ]] && git reset --hard origin/"${BRANCH}"
             git rebase upstream/"${BRANCH}" || die "There was an error rebasing ${FOLDER}!"
         fi
     elif [[ ${FOLDER} =~ "binutils" ]]; then
@@ -291,7 +293,11 @@ function git_sync() {(
         git rebase origin/"${BRANCH}" || die "There was an error updating ${FOLDER}!"
     else
         git fetch origin || die "There was an error fetching updates for ${FOLDER}!"
-        git rebase origin/"${BRANCH}" || die "There was an error updating ${FOLDER}!"
+        if [[ -z ${LOCAL_CHANGES} ]]; then
+            git reset --hard origin/"${BRANCH}" || die "There was an error updating ${FOLDER}!"
+        else
+            git rebase origin/"${BRANCH}" || die "There was an error updating ${FOLDER}!"
+        fi
     fi
 
     # Roll back if necessary
