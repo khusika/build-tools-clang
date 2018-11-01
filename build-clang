@@ -444,7 +444,7 @@ function install() {
 
     if [[ -z ${TEST} ]]; then
         rm -rf "${INSTALL_FOLDER}-old"
-        cp -r "${INSTALL_FOLDER}" "${INSTALL_FOLDER}-old" 2>/dev/null
+        mv "${INSTALL_FOLDER}" "${INSTALL_FOLDER}-old" 2>/dev/null
     fi
     if ! ninja install &>/dev/null; then
         header "ERROR INSTALLING!"
