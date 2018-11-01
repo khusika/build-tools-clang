@@ -467,7 +467,7 @@ function install() {
 # Package toolchain
 function package_tc() {
     if [[ -n ${COMPRESSION} ]]; then
-        TARGET_PACKAGE=${VENDOR}-clang-${VERSION}.0.${LLVM_VERSION_PATCH}.tar.${COMPRESSION}
+        TARGET_PACKAGE=${VENDOR}-clang-${VERSION}.0.${CLANG_SVN_REVISION}.tar.${COMPRESSION}
         PACKAGE=${VENDOR}-clang-${VERSION}.x${TEST:+"-test"}
 
         header "PACKAGING TOOLCHAIN"
