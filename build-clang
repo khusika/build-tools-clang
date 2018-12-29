@@ -260,7 +260,7 @@ function git_sync() {(
         # Set URL based on folder
         case ${FOLDER} in
             "clang")
-                URL=https://github.com/nathanchance/$(basename "${FOLDER}").git ;;
+                URL=https://github.com/khusika/$(basename "${FOLDER}").git ;;
             "extra")
                 URL=${LLVM_ORG}clang-tools-extra ;;
             *)
@@ -386,7 +386,7 @@ function cleanup() {
 function build() {
     header "Building Clang"
 
-    [[ -n ${STOCK} ]] && URL_PREFIX=${LLVM_ORG} || URL_PREFIX=https://github.com/nathanchance/
+    [[ -n ${STOCK} ]] && URL_PREFIX=${LLVM_ORG} || URL_PREFIX=https://github.com/khusika/
 
     cmake -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
