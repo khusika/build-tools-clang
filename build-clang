@@ -2,9 +2,9 @@
 # shellcheck disable=SC1117
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright (C) 2018 Nathan Chancellor
-#                    Albert I (krasCGQ)
-#                    Khusika Dhamar Gusti (khusika)
+# Copyright (C) 2018-2019 Nathan Chancellor
+#                         Albert I (krasCGQ)
+#                         Khusika Dhamar Gusti (khusika)
 #
 # Clang compilation script
 
