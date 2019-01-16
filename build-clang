@@ -45,10 +45,6 @@ START=$(date +"%s")
 # Number of threads
 THREADS=$(nproc --all)
 
-# Easy to use version variables
-STABLE_VERSION=7
-MASTER_VERSION=8
-
 ###############
 #             #
 #  FUNCTIONS  #
@@ -68,12 +64,12 @@ function help_menu() {
     echo "${BOLD}EXAMPLE:${RST}  ./$(basename ${0}) -a arm64\n"
     echo "${BOLD}REQUIRED PARAMETERS:${RST}"
     echo "  -a  | --arch:          Possible values: arm, arm64, powerpc, x86, ARM, and all. This is the toolchain's target architecture."
+    echo "  -v  | --version:       Possible values: (7, 8, and 9). This is the Clang version to build."
     echo "${BOLD}OPTIONAL PARAMETERS:${RST}"
     echo "  -I  | --install-only:  Install only."
     echo "  -b  | --build-only:    Build only."
     echo "  -l  | --local-changes: Ability to keep local changes around."
     echo "  -S  | --stock:         Compile official Clang (Without Nathan's patch)."
-    echo "  -s  | --stable:        Compile Clang 7."
     echo "  -u  | --update-only:   Ability to only update repos."
     echo "  -p  | --package:       Possible values: gz or xz. Compresses toolchain after build."
     echo "  -T  | --test:          Build a test toolchain.\n"
@@ -168,6 +164,7 @@ function parse_parameters() {
         case ${1} in
             # REQUIRED FLAGS
             "-a"|"--arch") shift && TARGET=${1} ;;
+            "-v"|"--version") shift && VERSION=${1} ;;
 
             # OPTIONAL FLAGS
             "-b"|"--build-only")
@@ -184,8 +181,6 @@ function parse_parameters() {
                 LOCAL_CHANGES=true ;;
             "-S"|"--stock")
                 STOCK=true ;;
-            "-s"|"--stable")
-                VERSION=${STABLE_VERSION} ;;
             "-T"|"--test")
                 TEST=true ;;
             "-u"|"--update-only")
@@ -212,8 +207,13 @@ function parse_parameters() {
         *) die "Absent or invalid arch specified!" -h ;;
     esac
 
-    # The master branch is compiled by default
-    [[ -z ${VERSION} ]] && VERSION=${MASTER_VERSION}
+    # Default values
+    case "${VERSION}" in
+        "7") VERSION="7" ;;
+        "8") VERSION="8" ;;
+        "9") VERSION="9" ;;
+        *) die "Absent or invalid Clang version!" -h ;;
+    esac
 
     # Folder that will hold the final compiled toolchain
     [[ -z ${INSTALL_FOLDER} ]] && INSTALL_FOLDER=${TC_FOLDER}/${VENDOR}-clang-${VERSION}.x${TEST:+"-test"}
@@ -230,15 +230,19 @@ function rollback() {
     if [[ -n ${DATE_OFFSET} ]]; then
         git checkout "$(git log -1 --format=%H --before="$(date --date="-${DATE_OFFSET} day")")" || die "There was an error rolling back ${FOLDER}!"
         if [[ -z ${STOCK} && ${FOLDER} = "clang" ]]; then
-            if [[ ${VERSION} -eq ${STABLE_VERSION} ]]; then
+            if [[ VERSION="7" ]]; then
                 git cherry-pick 24c9731717 || die "There was an error rolling back ${FOLDER}!"
                 git cherry-pick 513f3b3fb7 || die "There was an error rolling back ${FOLDER}!"
                 git cherry-pick eab6ce7dc6 || die "There was an error rolling back ${FOLDER}!"
                 git cherry-pick 69ad28caf8 || die "There was an error rolling back ${FOLDER}!"
+            elif [[ VERSION="8" ]]; then
+                git cherry-pick 24c9731717 || die "There was an error rolling back ${FOLDER}!"
+                git cherry-pick c55e0cea84 || die "There was an error rolling back ${FOLDER}!"
+                git cherry-pick f9428e60e6 || die "There was an error rolling back ${FOLDER}!"
             else
                 git cherry-pick 24c9731717 || die "There was an error rolling back ${FOLDER}!"
-                git cherry-pick 0ba332f771 || die "There was an error rolling back ${FOLDER}!"
-                git cherry-pick 9bb2dfc11c || die "There was an error rolling back ${FOLDER}!"
+                git cherry-pick cfcf0ee85e || die "There was an error rolling back ${FOLDER}!"
+                git cherry-pick 58316edd19 || die "There was an error rolling back ${FOLDER}!"
             fi
         fi
     fi
@@ -313,7 +317,7 @@ function svn_revision() {
     # SC2031: BRANCH was modified in a subshell. That change might be lost.
     # shellcheck disable=SC2031
     case ${VERSION} in
-        ${MASTER_VERSION}) URL_SUFFIX=trunk ;;
+        "9") URL_SUFFIX=trunk ;;
         *) URL_SUFFIX=branches/"${BRANCH}" ;;
     esac
 
@@ -335,7 +339,7 @@ function sync_all() {
 
     # Set branch based on version
     case ${VERSION} in
-        ${MASTER_VERSION}) BRANCH=master ;;
+        "9") BRANCH=master ;;
         *) BRANCH="release_${VERSION}0" ;;
     esac
 
