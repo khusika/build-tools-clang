@@ -60,7 +60,20 @@ Once you have set up your environment, run the following to build clang:
 ```bash
 $ git clone https://github.com/khusika/build-tools-clang
 $ cd build-tools-clang
-$ ./build-clang
+$ ./build-clang -h
+```
+
+The printout will show you how to run the script.
+
+Example commands:
+
+```bash
+# Build a Clang 8.x toolchain for all architecture
+./build-clang -a ARM -v 8
+
+# Build a Clang 7.x toolchain for arm64
+./build-clang -a arm64 -v 7
+
 ```
 
 ## Credits/thanks
