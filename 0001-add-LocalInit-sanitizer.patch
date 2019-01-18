@@ -1,0 +1,85 @@
+From d1e0b0d68866bc4dd4c8912ba2ac794872570595 Mon Sep 17 00:00:00 2001
+From: Daniel Micay <danielmicay@gmail.com>
+Date: Sun, 7 Aug 2016 03:10:41 -0400
+Subject: [PATCH] add LocalInit sanitizer
+
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+---
+ clang/include/clang/Basic/Sanitizers.def |  3 +++
+ clang/lib/CodeGen/CGDecl.cpp             | 16 ++++++++++++----
+ clang/lib/Driver/ToolChain.cpp           |  3 ++-
+ 3 files changed, 17 insertions(+), 5 deletions(-)
+
+diff --git a/clang/include/clang/Basic/Sanitizers.def b/clang/include/clang/Basic/Sanitizers.def
+index ae5c75fc5..9c83a325f 100644
+--- a/clang/include/clang/Basic/Sanitizers.def
++++ b/clang/include/clang/Basic/Sanitizers.def
+@@ -153,6 +153,9 @@ SANITIZER_GROUP("efficiency-all", Efficiency,
+ // Scudo hardened allocator
+ SANITIZER("scudo", Scudo)
+ 
++// Local Init
++SANITIZER("local-init", LocalInit)
++
+ // Magic group, containing all sanitizers. For example, "-fno-sanitize=all"
+ // can be used to disable all the sanitizers.
+ SANITIZER_GROUP("all", All, ~0ULL)
+diff --git a/clang/lib/CodeGen/CGDecl.cpp b/clang/lib/CodeGen/CGDecl.cpp
+index 57b2fbadb..e3d9a7025 100644
+--- a/clang/lib/CodeGen/CGDecl.cpp
++++ b/clang/lib/CodeGen/CGDecl.cpp
+@@ -1466,8 +1466,9 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
+     return;
+   }
+ 
+-  if (isTrivialInitializer(Init))
+-    return;
++  bool trivial = isTrivialInitializer(Init);
++  if (trivial && !getLangOpts().Sanitize.has(SanitizerKind::LocalInit))
++      return;
+ 
+   // Check whether this is a byref variable that's potentially
+   // captured and moved by its own initializer.  If so, we'll need to
+@@ -1477,8 +1478,15 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
+   Address Loc =
+     capturedByInit ? emission.Addr : emission.getObjectAddress(*this);
+ 
++  bool constantAggregate = emission.IsConstantAggregate;
++
+   llvm::Constant *constant = nullptr;
+-  if (emission.IsConstantAggregate || D.isConstexpr()) {
++  if (trivial) {
++    QualType Ty = D.getType();
++    constant = CGM.EmitNullConstant(Ty);
++    if (Ty->isArrayType() || Ty->isRecordType())
++        constantAggregate = true;
++  } else if (emission.IsConstantAggregate || D.isConstexpr()) {
+     assert(!capturedByInit && "constant init contains a capturing block?");
+     constant = ConstantEmitter(*this).tryEmitAbstractForInitializer(D);
+   }
+@@ -1489,7 +1497,7 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
+     return EmitExprAsInit(Init, &D, lv, capturedByInit);
+   }
+ 
+-  if (!emission.IsConstantAggregate) {
++  if (!constantAggregate) {
+     // For simple scalar/complex initialization, store the value directly.
+     LValue lv = MakeAddrLValue(Loc, type);
+     lv.setNonGC(true);
+diff --git a/clang/lib/Driver/ToolChain.cpp b/clang/lib/Driver/ToolChain.cpp
+index cf3db3468..a69e6ca4a 100644
+--- a/clang/lib/Driver/ToolChain.cpp
++++ b/clang/lib/Driver/ToolChain.cpp
+@@ -804,7 +804,8 @@ SanitizerMask ToolChain::getSupportedSanitizers() const {
+ 
+   SanitizerMask Res = (Undefined & ~Vptr & ~Function) | (CFI & ~CFIICall) |
+                       CFICastStrict | UnsignedIntegerOverflow |
+-                      ImplicitConversion | Nullability | LocalBounds;
++                      ImplicitConversion | Nullability | LocalBounds |
++                      LocalInit;
+   if (getTriple().getArch() == llvm::Triple::x86 ||
+       getTriple().getArch() == llvm::Triple::x86_64 ||
+       getTriple().getArch() == llvm::Triple::arm ||
+-- 
+2.20.1
+
