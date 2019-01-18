@@ -21,9 +21,6 @@ GRN="\033[01;32m"
 RED="\033[01;31m"
 RST="\033[0m"
 
-# Set linux username
-VENDOR=${USER}
-
 # Set current working directory
 DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
@@ -210,7 +207,7 @@ function parse_parameters() {
     esac
 
     # Folder that will hold the final compiled toolchain
-    [[ -z ${INSTALL_FOLDER} ]] && INSTALL_FOLDER=${TC_FOLDER}/${VENDOR}-clang-${VERSION}.x${TEST:+"-test"}
+    [[ -z ${INSTALL_FOLDER} ]] && INSTALL_FOLDER=${TC_FOLDER}/clang-${VERSION}.x${TEST:+"-test"}
 
     # Set compiler
     CC=$(command -v clang || command -v gcc)
@@ -360,7 +357,6 @@ function build() {
 
     cmake -G Ninja \
           -DCLANG_REPOSITORY_STRING="${URL_PREFIX}clang" \
-          -DCLANG_VENDOR="${VENDOR} " \
           -DCLANG_VERSION_SUFFIX="-r${CLANG_SVN_REVISION:?}" \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER="${CC}" \
@@ -431,8 +427,8 @@ function install() {
 # Package toolchain
 function package_tc() {
     if [[ -n ${COMPRESSION} ]]; then
-        TARGET_PACKAGE=${VENDOR}-clang-${VERSION}.0.${CLANG_SVN_REVISION}.tar.${COMPRESSION}
-        PACKAGE=${VENDOR}-clang-${VERSION}.x${TEST:+"-test"}
+        TARGET_PACKAGE=clang-${VERSION}.0.${CLANG_SVN_REVISION}.tar.${COMPRESSION}
+        PACKAGE=clang-${VERSION}.x${TEST:+"-test"}
 
         header "PACKAGING TOOLCHAIN"
 
