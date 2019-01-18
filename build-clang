@@ -485,7 +485,7 @@ function package_tc() {
             *)
                 die "Invalid compression specified... skipping" ;;
         esac
-        find "${DIR}" -type f -name "${TARGET_PACKAGE}" | xargs mv -t "${TC_FOLDER}"
+        find "${DIR}" -print0 -type f -name "${TARGET_PACKAGE}" | xargs --null mv -t "${TC_FOLDER}"
         echo "${BOLD}Packaging location:${RST} ${INSTALL_FOLDER}/${TARGET_PACKAGE}"
     fi
 }
