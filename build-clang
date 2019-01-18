@@ -29,12 +29,12 @@ DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 # |__ build
 # |__ src
 # |   |__ binutils
-# |   |__ llvm
+# |   |__ llvm-project
 # |__ toolchains
 
 SRC_FOLDER=${DIR}/src
 BINUTILS_FOLDER=${SRC_FOLDER}/binutils
-LLVM_FOLDER=${SRC_FOLDER}/llvm
+LLVM_FOLDER=${SRC_FOLDER}/llvm-project
 BUILD_FOLDER=${DIR}/build
 TC_FOLDER=${DIR}/toolchains
 
@@ -64,7 +64,6 @@ function help_menu() {
     echo "${BOLD}OPTIONAL PARAMETERS:${RST}"
     echo "  -I  | --install-only:  Install only."
     echo "  -b  | --build-only:    Build only."
-    echo "  -l  | --local-changes: Ability to keep local changes around."
     echo "  -S  | --stock:         Compile official Clang (Without Nathan's patch)."
     echo "  -u  | --update-only:   Ability to only update repos."
     echo "  -p  | --package:       Possible values: gz or xz. Compresses toolchain after build."
@@ -170,8 +169,6 @@ function parse_parameters() {
             "-i"|"--install-folder")
                 shift && enforce_value "${@}"
                 INSTALL_FOLDER=${1} ;;
-            "-l"|"--local-changes")
-                LOCAL_CHANGES=true ;;
             "-S"|"--stock")
                 STOCK=true ;;
             "-T"|"--test")
@@ -216,105 +213,42 @@ function parse_parameters() {
 }
 
 
-# Sync a git project
-function git_sync() {(
-    FOLDER=${1}
-
-    # binutils uses another URL/branch scheme
-    if [[ ${FOLDER} =~ "binutils" ]]; then
-        URL=git://sourceware.org/git/binutils-gdb.git
-        # SC2030: Modification of BRANCH is local (to subshell caused by (..) group).
-        # shellcheck disable=SC2030
-        BRANCH=binutils-2_31-branch
-    else
-        # Set URL based on folder
-        case ${FOLDER} in
-            "clang")
-                URL=https://github.com/khusika/$(basename "${FOLDER}").git ;;
-            "extra")
-                URL=${LLVM_ORG}clang-tools-extra ;;
-            *)
-                URL=${LLVM_ORG}$(basename "${FOLDER}") ;;
-        esac
-    fi
-
-    # If folder doesn't exist, we need to clone it
-    if [[ ! -d ${FOLDER} ]]; then
-        git clone "${URL}" -b "${BRANCH}" "${FOLDER}" || die "Error cloning ${FOLDER}!"
-    fi
-
-    cd "${FOLDER}" || die "Error moving into ${FOLDER}"
-
-    git clean -fxdq
-
-    # If checking out a branch fails, it's because 'origin/<branch>' and 'upstream/<branch>' exist
-    git checkout ${BRANCH} || git checkout -b ${BRANCH} origin/${BRANCH}
-
-    # For Clang, we need to add an upstream remote and rebase on it
-    if [[ ${FOLDER} = "clang" ]]; then
-        add_remote upstream "${LLVM_ORG}$(basename "${FOLDER}")"
-        git fetch upstream
-        if [[ -n ${STOCK} ]]; then
-            git reset --hard upstream/"${BRANCH}"
-        else
-            [[ -z ${LOCAL_CHANGES} ]] && git reset --hard origin/"${BRANCH}"
-            git rebase upstream/"${BRANCH}" || die "There was an error rebasing ${FOLDER}!"
-        fi
-    elif [[ ${FOLDER} =~ "binutils" ]]; then
-        git fetch origin "${BRANCH}" || die "There was an error fetching updates for ${FOLDER}!"
-        git rebase origin/"${BRANCH}" || die "There was an error updating ${FOLDER}!"
-    else
-        git fetch origin || die "There was an error fetching updates for ${FOLDER}!"
-        if [[ -z ${LOCAL_CHANGES} ]]; then
-            git reset --hard origin/"${BRANCH}" || die "There was an error updating ${FOLDER}!"
-        else
-            git rebase origin/"${BRANCH}" || die "There was an error updating ${FOLDER}!"
-        fi
-    fi
-) || exit 1; }
-
-
 # Syncs all necessary projects
 function sync_all() {
-    header "Syncing projects"
-
-    mkdir -p "${SRC_FOLDER}"
-    cd "${SRC_FOLDER}" || die "Error creating ${SRC_FOLDER}!"
+    mkdir -p "${SRC_FOLDER}" || die "Error creating ${SRC_FOLDER}!"
 
     # Set branch based on version
     case ${VERSION} in
         "9") BRANCH=master ;;
-        *) BRANCH="release_${VERSION}0" ;;
+        *) BRANCH="release/${VERSION}.x" ;;
     esac
 
-    # Define the git URL for global use
-    LLVM_ORG=https://git.llvm.org/git/
+    # Update LLVM repo
+    LLVM_URL=https://github.com/llvm/llvm-project
+    if [[ -d ${LLVM_FOLDER} ]]; then
+        header "Updating LLVM"
 
-    git_sync binutils
-    git_sync llvm
-    svn_revision llvm
+        git -C "${LLVM_FOLDER}" reset --hard
+        git -C "${LLVM_FOLDER}" checkout "${BRANCH}" || die "Error changing branches for LLVM!"
+        git -C "${LLVM_FOLDER}" pull --rebase origin "${BRANCH}" || die "Error updating LLVM!"
+    else
+        header "Cloning LLVM"
 
-    mkdir -p "${LLVM_FOLDER}/tools"
-    cd "${LLVM_FOLDER}/tools" || die "Error creating tools folder!"
+        git -C "${SRC_FOLDER}" clone -b "${BRANCH}" ${LLVM_URL} || die "Error cloning LLVM!"
+    fi
+    GIT_REVISION=$(git -C "${LLVM_FOLDER}" show -s --format=%H origin/"${BRANCH}")
+    [[ -z ${STOCK} && ${VERSION} -eq 7 ]] && { git -C "${LLVM_FOLDER}" apply -v -3 "${DIR}"/0001-add-LocalInit-sanitizer.patch || die "Applying local-init patch failed!"; }
 
-    git_sync clang
-    svn_revision clang
-    git_sync lld
-    git_sync polly
+    # Update binutils repo
+    if [[ -d ${BINUTILS_FOLDER} ]]; then
+        header "Updating binutils"
 
-    mkdir -p "${LLVM_FOLDER}/projects"
-    cd "${LLVM_FOLDER}/projects" || die "Error creating projects folder!"
+        git -C "${BINUTILS_FOLDER}" pull --rebase origin master || die "Error updating binutils"
+    else
+        header "Cloning binutils"
 
-    git_sync compiler-rt
-    git_sync libcxx
-    git_sync libcxxabi
-    git_sync libunwind
-    git_sync openmp
-
-    mkdir -p "${LLVM_FOLDER}/tools/clang/tools"
-    cd "${LLVM_FOLDER}/tools/clang/tools" || die "Error creating tools folder!"
-
-    git_sync extra
+        git -C "${SRC_FOLDER}" clone --single-branch -b master git://sourceware.org/git/binutils-gdb.git binutils || die "Error cloning binutils"
+    fi
 
     [[ -n ${UPDATE_ONLY} ]] && exit
 }
@@ -333,10 +267,9 @@ function cleanup() {
 function build() {
     header "Building Clang"
 
-    [[ -n ${STOCK} ]] && URL_PREFIX=${LLVM_ORG} || URL_PREFIX=https://github.com/khusika/
-
-    cmake -G Ninja \
-          -DCLANG_REPOSITORY_STRING="${URL_PREFIX}clang" \
+    cmake -Wno-dev \
+          -G Ninja \
+          -DCLANG_REPOSITORY_STRING="${LLVM_URL} ${GIT_REVISION}" \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER="${CC}" \
           -DCMAKE_C_FLAGS="-O2 -march=native -mtune=native" \
@@ -348,13 +281,14 @@ function build() {
           -DLLVM_CCACHE_BUILD=ON \
           -DLLVM_ENABLE_BINDINGS=OFF \
           -DLLVM_ENABLE_OCAMLDOC=OFF \
+          -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;compiler-rt;libcxx;libcxxabi;libunwind;lld;llvm;openmp;polly" \
           -DLLVM_ENABLE_WARNINGS=OFF \
           -DLLVM_INCLUDE_DOCS=OFF \
           -DLLVM_INCLUDE_EXAMPLES=OFF \
           -DLLVM_INCLUDE_TESTS=OFF \
           -DLLVM_TARGETS_TO_BUILD="${ARCH}" \
           -DLLVM_USE_LINKER="$(for LD in lld gold bfd; do command -v ld.${LD} &>/dev/null && break; done; echo ${LD})" \
-          "${LLVM_FOLDER}" || die "There was an error running cmake!"
+          "${LLVM_FOLDER}"/llvm || die "There was an error running cmake!"
 
     time ninja && SUCCESS=true
     TIME_STRING="$(format_time "${START}" "$(date +"%s")")"
@@ -388,7 +322,6 @@ function sync_build() {
 
 # Install the toolchain
 function install() {
-
     if [[ -z ${TEST} ]]; then
         rm -rf "${INSTALL_FOLDER}-old"
         mv "${INSTALL_FOLDER}" "${INSTALL_FOLDER}-old" 2>/dev/null
@@ -405,7 +338,7 @@ function install() {
 # Package toolchain
 function package_tc() {
     if [[ -n ${COMPRESSION} ]]; then
-        TARGET_PACKAGE=clang-${VERSION}.0.tar.${COMPRESSION}
+        TARGET_PACKAGE=clang-${VERSION}.0-${GIT_REVISION:0:12}.tar.${COMPRESSION}
         PACKAGE=clang-${VERSION}.x${TEST:+"-test"}
 
         header "PACKAGING TOOLCHAIN"
