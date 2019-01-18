@@ -27,16 +27,18 @@ VENDOR=${USER}
 # Set current working directory
 DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
-# Folder that will house the source and build files
-MAIN_FOLDER=${DIR}/clang-build
+# Folder structure
+# |__ build-clang
+# |__ build
+# |__ src
+# |   |__ binutils
+# |   |__ llvm
+# |__ toolchains
 
-# Folder that will hold the main LLVM source
-LLVM_FOLDER=${MAIN_FOLDER}/llvm
-
-# Folder that will hold all of the build files and compiled code
-BUILD_FOLDER=${MAIN_FOLDER}/build
-
-# Folder that will hold compiled toolchains
+SRC_FOLDER=${DIR}/src
+BINUTILS_FOLDER=${SRC_FOLDER}/binutils
+LLVM_FOLDER=${SRC_FOLDER}/llvm
+BUILD_FOLDER=${DIR}/build
 TC_FOLDER=${DIR}/toolchains
 
 # Start tracking time
@@ -299,8 +301,8 @@ function svn_revision() {
 function sync_all() {
     header "Syncing projects"
 
-    mkdir -p "${MAIN_FOLDER}"
-    cd "${MAIN_FOLDER}" || die "Error creating ${MAIN_FOLDER}!"
+    mkdir -p "${SRC_FOLDER}"
+    cd "${SRC_FOLDER}" || die "Error creating ${SRC_FOLDER}!"
 
     # Set branch based on version
     case ${VERSION} in
@@ -311,13 +313,13 @@ function sync_all() {
     # Define the git URL for global use
     LLVM_ORG=https://git.llvm.org/git/
 
+    git_sync binutils
     git_sync llvm
     svn_revision llvm
 
     mkdir -p "${LLVM_FOLDER}/tools"
     cd "${LLVM_FOLDER}/tools" || die "Error creating tools folder!"
 
-    git_sync binutils
     git_sync clang
     svn_revision clang
     git_sync lld
@@ -367,7 +369,7 @@ function build() {
           -DCMAKE_CXX_FLAGS="-O2 -march=native -mtune=native" \
           -DLINK_POLLY_INTO_TOOLS=ON \
           -DCMAKE_INSTALL_PREFIX="${INSTALL_FOLDER}" \
-          -DLLVM_BINUTILS_INCDIR="${LLVM_FOLDER}/tools/binutils/include" \
+          -DLLVM_BINUTILS_INCDIR="${BINUTILS_FOLDER}/include" \
           -DLLVM_CCACHE_BUILD=ON \
           -DLLVM_ENABLE_BINDINGS=OFF \
           -DLLVM_ENABLE_OCAMLDOC=OFF \
