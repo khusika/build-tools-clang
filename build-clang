@@ -209,9 +209,7 @@ function parse_parameters() {
 
     # Default values
     case "${VERSION}" in
-        "7") VERSION="7" ;;
-        "8") VERSION="8" ;;
-        "9") VERSION="9" ;;
+        7|8|9) ;;
         *) die "Absent or invalid Clang version!" -h ;;
     esac
 
