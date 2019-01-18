@@ -60,8 +60,8 @@ function echo() {
 function help_menu() {
     echo
     echo "${BOLD}OVERVIEW:${RST} Build a Clang toolchain\n"
-    echo "${BOLD}USAGE:${RST}    ./$(basename ${0}) <options>\n"
-    echo "${BOLD}EXAMPLE:${RST}  ./$(basename ${0}) -a arm64\n"
+    echo "${BOLD}USAGE:${RST}    ./$(basename "${0}") <options>\n"
+    echo "${BOLD}EXAMPLE:${RST}  ./$(basename "${0}") -a arm64\n"
     echo "${BOLD}REQUIRED PARAMETERS:${RST}"
     echo "  -a  | --arch:          Possible values: arm, arm64, powerpc, x86, ARM, and all. This is the toolchain's target architecture."
     echo "  -v  | --version:       Possible values: (7, 8, and 9). This is the Clang version to build."
@@ -376,7 +376,7 @@ function sync_all() {
 
 # Removes any previous build files
 function cleanup() {
-    find ${DIR} -type f -name "*.tar.*" -exec rm -f {} \;
+    find "${DIR}" -type f -name "*.tar.*" -exec rm -f {} \;
     rm -rf "${BUILD_FOLDER}"
     mkdir -p "${BUILD_FOLDER}"
     cd "${BUILD_FOLDER}" || die "Error creating build folder!"
@@ -478,14 +478,14 @@ function package_tc() {
         case "${COMPRESSION}" in
             "gz")
                 echo "Packaging with GZIP..."
-                GZ_OPT=-9 tar -c --use-compress-program=pigz --absolute-names -f "${TARGET_PACKAGE}" -C ${TC_FOLDER} ${PACKAGE} ;;
+                GZ_OPT=-9 tar -c --use-compress-program=pigz --absolute-names -f "${TARGET_PACKAGE}" -C "${TC_FOLDER}" "${PACKAGE}" ;;
             "xz")
                 echo "Packaging with XZ..."
-                XZ_OPT=-9 tar -c --use-compress-program=pxz --absolute-names -f "${TARGET_PACKAGE}" -C ${TC_FOLDER} ${PACKAGE} ;;
+                XZ_OPT=-9 tar -c --use-compress-program=pxz --absolute-names -f "${TARGET_PACKAGE}" -C "${TC_FOLDER}" "${PACKAGE}" ;;
             *)
                 die "Invalid compression specified... skipping" ;;
         esac
-        find ${DIR} -type f -name "${TARGET_PACKAGE}" | xargs mv -t ${TC_FOLDER}
+        find "${DIR}" -type f -name "${TARGET_PACKAGE}" | xargs mv -t "${TC_FOLDER}"
         echo "${BOLD}Packaging location:${RST} ${INSTALL_FOLDER}/${TARGET_PACKAGE}"
     fi
 }
