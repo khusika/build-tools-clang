@@ -467,15 +467,15 @@ function package_tc() {
         echo "Target file: ${TARGET_PACKAGE}"
 
         case "${COMPRESSION}" in
-            "gz")
-                echo "Packaging with GZIP..."
-                GZ_OPT=-9 tar -c --use-compress-program=pigz --absolute-names -f "${TARGET_PACKAGE}" -C "${TC_FOLDER}" "${PACKAGE}" ;;
-            "xz")
-                echo "Packaging with XZ..."
-                XZ_OPT=-9 tar -c --use-compress-program=pxz --absolute-names -f "${TARGET_PACKAGE}" -C "${TC_FOLDER}" "${PACKAGE}" ;;
+            "gz") COMPRESSION_NAME=GZIP; COMPRESSION_PROGRAM=pigz ;;
+            "xz") COMPRESSION_NAME=XZ; COMPRESSION_PROGRAM=pxz ;;
             *)
                 die "Invalid compression specified... skipping" ;;
         esac
+        export "${COMPRESSION,,}"_OPT=-9
+
+        echo "Packaging with ${COMPRESSION_NAME}..."
+        tar -c --use-compress-program=${COMPRESSION_PROGRAM} --absolute-names -f "${TARGET_PACKAGE}" -C "${TC_FOLDER}" "${PACKAGE}"
         find "${DIR}" -print0 -type f -name "${TARGET_PACKAGE}" | xargs --null mv -t "${TC_FOLDER}"
         echo "${BOLD}Packaging location:${RST} ${INSTALL_FOLDER}/${TARGET_PACKAGE}"
     fi
