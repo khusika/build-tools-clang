@@ -22,7 +22,7 @@ RED="\033[01;31m"
 RST="\033[0m"
 
 # Set linux username
-VENDOR=$(echo $USER)
+VENDOR=${USER}
 
 # Set current working directory
 DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
