@@ -355,7 +355,7 @@ function package_tc() {
 
         echo "Packaging with ${COMPRESSION_NAME}..."
         tar -c --use-compress-program=${COMPRESSION_PROGRAM} --absolute-names -f "${TARGET_PACKAGE}" -C "${TC_FOLDER}" "${PACKAGE}"
-        find "${DIR}" -print0 -type f -name "${TARGET_PACKAGE}" | xargs --null mv -t "${TC_FOLDER}"
+        find "${DIR}" -type f -name "${TARGET_PACKAGE}" -print0 | xargs --null mv -t "${TC_FOLDER}"
         echo "${BOLD}Packaging location:${RST} ${INSTALL_FOLDER}/${TARGET_PACKAGE}"
     fi
 }
